@@ -1,4 +1,5 @@
 import { getSchools, getServiceTypes, getPricesWithDetails } from '@/lib/queries'
+import { geocodeSchools } from '@/lib/geocode'
 import PriceComparison from '@/components/PriceComparison'
 import MapSection from '@/components/MapSection'
 import ChatWidget from '@/components/ChatWidget'
@@ -9,6 +10,8 @@ export default async function Home() {
     getServiceTypes(),
     getPricesWithDetails(),
   ])
+
+  const geocodedSchools = await geocodeSchools(schools)
 
   return (
     <main>
@@ -50,7 +53,7 @@ export default async function Home() {
       <PriceComparison serviceTypes={serviceTypes} prices={prices} schools={schools} />
 
       {/* Map + school cards */}
-      <MapSection schools={schools} />
+      <MapSection schools={geocodedSchools} />
 
       {/* Floating AI chat */}
       <ChatWidget />

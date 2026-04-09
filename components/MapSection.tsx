@@ -1,6 +1,6 @@
 'use client'
 import dynamic from 'next/dynamic'
-import type { School } from '@/lib/types'
+import type { GeocodedSchool } from '@/lib/geocode'
 
 const MapClient = dynamic(() => import('./MapClient'), {
   ssr: false,
@@ -12,7 +12,7 @@ const MapClient = dynamic(() => import('./MapClient'), {
   ),
 })
 
-export default function MapSection({ schools }: { schools: School[] }) {
+export default function MapSection({ schools }: { schools: GeocodedSchool[] }) {
   return (
     <section id="karta" className="py-16 px-4" style={{ background: 'var(--muted-bg)' }}>
       <div className="max-w-6xl mx-auto">
