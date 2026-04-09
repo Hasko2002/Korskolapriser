@@ -1,3 +1,5 @@
+export const revalidate = 3600 // Bygg om sidan var 1:e timme
+
 import { getSchools, getServiceTypes, getPricesWithDetails } from '@/lib/queries'
 import { geocodeSchools } from '@/lib/geocode'
 import PriceComparison from '@/components/PriceComparison'
