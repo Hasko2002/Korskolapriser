@@ -5,6 +5,7 @@ import { geocodeSchools } from '@/lib/geocode'
 import PriceComparison from '@/components/PriceComparison'
 import MapSection from '@/components/MapSection'
 import ChatWidget from '@/components/ChatWidget'
+import Logo from '@/components/Logo'
 
 export default async function Home() {
   const [schools, serviceTypes, prices] = await Promise.all([
@@ -29,6 +30,10 @@ export default async function Home() {
           }}
         />
         <div className="max-w-3xl mx-auto text-center">
+          <div className="flex justify-center mb-10">
+            <Logo width={320} />
+          </div>
+
           <span
             className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full mb-8 uppercase tracking-wider"
             style={{ background: 'var(--primary-light)', color: 'var(--primary)' }}
