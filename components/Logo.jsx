@@ -1,4 +1,4 @@
-export default function Logo({ width = '100%' }) {
+export default function Logo({ width = '100%', textFill = '#1a1a2e' }) {
   return (
     <svg width={width} viewBox="0 0 680 200" role="img" aria-label="Körkollen logotyp">
       <defs>
@@ -14,7 +14,7 @@ export default function Logo({ width = '100%' }) {
       <line x1="100" y1="108" x2="100" y2="120" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" opacity="0.6" />
       <polygon points="100,48 138,148 62,148" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinejoin="round" opacity="0.25" clipPath="url(#circle-clip)" />
       <path d="M78,98 L93,113 L122,82" fill="none" stroke="#3BD48B" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
-      <text x="192" y="88" fontFamily="system-ui, sans-serif" fontWeight="700" fontSize="52" fill="#1a1a2e" letterSpacing="-1">
+      <text x="192" y="88" fontFamily="system-ui, sans-serif" fontWeight="700" fontSize="52" fill={textFill} letterSpacing="-1">
         Kör<tspan fill="#3B8BD4">kollen</tspan>
       </text>
       <text x="194" y="122" fontFamily="system-ui, sans-serif" fontWeight="400" fontSize="18" fill="#888780" letterSpacing="1">

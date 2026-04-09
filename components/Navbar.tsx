@@ -2,6 +2,7 @@
 import Link from 'next/link'
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
+import Logo from '@/components/Logo'
 
 export default function Navbar() {
   const { theme, setTheme } = useTheme()
@@ -13,23 +14,8 @@ export default function Navbar() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
 
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center transition-transform group-hover:scale-105"
-            style={{ background: 'var(--primary)' }}
-          >
-            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="9" strokeWidth="1.5" />
-              <circle cx="12" cy="12" r="3" strokeWidth="1.5" />
-              <path strokeLinecap="round" strokeWidth="1.5" d="M12 3v3M12 18v3M3 12h3M18 12h3" />
-            </svg>
-          </div>
-          <div>
-            <span className="font-bold text-base leading-none" style={{ color: 'var(--foreground)' }}>
-              Kör<span style={{ color: 'var(--primary)' }}>kollen</span>
-            </span>
-            <span className="block text-xs leading-none" style={{ color: 'var(--muted)' }}>Växjö</span>
-          </div>
+        <Link href="/" className="flex items-center transition-opacity hover:opacity-80">
+          <Logo width="155" textFill="var(--foreground)" />
         </Link>
 
         {/* Nav links */}
