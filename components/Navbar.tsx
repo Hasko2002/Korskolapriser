@@ -9,31 +9,53 @@ export default function Navbar() {
   useEffect(() => setMounted(true), [])
 
   return (
-    <nav className="sticky top-0 z-50 border-b bg-[var(--card)]/80 backdrop-blur-md">
+    <nav className="sticky top-0 z-50 border-b" style={{ background: 'var(--card)', borderColor: 'var(--card-border)' }}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="font-bold text-xl text-[var(--primary)]">Körskolapriser</span>
-          <span className="text-sm font-normal text-[var(--muted)] hidden sm:inline">Växjö</span>
+
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center transition-transform group-hover:scale-105"
+            style={{ background: 'var(--primary)' }}
+          >
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="9" strokeWidth="1.5" />
+              <circle cx="12" cy="12" r="3" strokeWidth="1.5" />
+              <path strokeLinecap="round" strokeWidth="1.5" d="M12 3v3M12 18v3M3 12h3M18 12h3" />
+            </svg>
+          </div>
+          <div>
+            <span className="font-bold text-base leading-none" style={{ color: 'var(--foreground)' }}>
+              Kör<span style={{ color: 'var(--primary)' }}>kollen</span>
+            </span>
+            <span className="block text-xs leading-none" style={{ color: 'var(--muted)' }}>Växjö</span>
+          </div>
         </Link>
 
-        <div className="flex items-center gap-6">
+        {/* Nav links */}
+        <div className="flex items-center gap-1">
           <Link
             href="#priser"
-            className="text-sm font-medium text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+            className="px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[var(--muted-bg)]"
+            style={{ color: 'var(--muted)' }}
           >
             Priser
           </Link>
           <Link
             href="#karta"
-            className="text-sm font-medium text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+            className="px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[var(--muted-bg)]"
+            style={{ color: 'var(--muted)' }}
           >
             Karta
           </Link>
 
+          <div className="w-px h-5 mx-1" style={{ background: 'var(--card-border)' }} />
+
           {mounted && (
             <button
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="p-2 rounded-lg bg-[var(--muted-bg)] border hover:border-[var(--primary)] transition-all"
+              className="p-2 rounded-lg transition-colors hover:bg-[var(--muted-bg)]"
+              style={{ color: 'var(--muted)' }}
               aria-label="Byt tema"
             >
               {theme === 'dark' ? (

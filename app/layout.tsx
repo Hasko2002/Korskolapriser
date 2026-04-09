@@ -3,13 +3,14 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/components/ThemeProvider'
 import Navbar from '@/components/Navbar'
+import Footer from '@/components/Footer'
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] })
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Körskolapriser Växjö – Jämför priser',
-  description: 'Jämför priser mellan körskolor i Växjö. Hitta billigaste körskolan för B-körkort, intensivkurs och handledarutbildning.',
+  title: 'Körkollen Växjö – Jämför körskolor & priser',
+  description: 'Jämför priser mellan alla körskolor i Växjö. Hitta billigaste körskolan för B-körkort, intensivkurs och handledarutbildning.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -22,7 +23,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-full flex flex-col">
         <ThemeProvider>
           <Navbar />
-          {children}
+          <div className="flex-1">{children}</div>
+          <Footer />
         </ThemeProvider>
       </body>
     </html>
