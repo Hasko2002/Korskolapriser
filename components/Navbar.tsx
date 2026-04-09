@@ -15,7 +15,7 @@ export default function Navbar() {
 
         {/* Logo */}
         <Link href="/" className="flex items-center transition-opacity hover:opacity-80">
-          <Logo width="155" textFill="var(--foreground)" />
+          <Logo width="155" />
         </Link>
 
         {/* Nav links */}
