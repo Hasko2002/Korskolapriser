@@ -3,6 +3,7 @@ export const revalidate = 3600 // Bygg om sidan var 1:e timme
 import { getSchools, getServiceTypes, getPricesWithDetails } from '@/lib/queries'
 import { geocodeSchools } from '@/lib/geocode'
 import PriceComparison from '@/components/PriceComparison'
+import CostCalculator from '@/components/CostCalculator'
 import MapSection from '@/components/MapSection'
 import ChatWidget from '@/components/ChatWidget'
 
@@ -77,6 +78,9 @@ export default async function Home() {
 
       {/* Price comparison */}
       <PriceComparison serviceTypes={serviceTypes} prices={prices} schools={schools} />
+
+      {/* Cost calculator */}
+      <CostCalculator schools={schools} />
 
       {/* Map */}
       <MapSection schools={geocodedSchools} />
