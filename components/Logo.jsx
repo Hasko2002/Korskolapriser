@@ -18,7 +18,7 @@ export default function Logo({ width = '100%' }) {
         Kör<tspan fill="#3B8BD4">kollen</tspan>
       </text>
       <text x="194" y="122" fontFamily="system-ui, sans-serif" fontWeight="400" fontSize="18" fill="var(--muted)" letterSpacing="1">
-        Jämför körskolor i Växjö
+        Jämför körskolor i Kronoberg
       </text>
       <rect x="192" y="132" width="120" height="3" rx="1.5" fill="#3B8BD4" opacity="0.5" />
     </svg>

@@ -1,12 +1,20 @@
 'use client'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
 import Logo from '@/components/Logo'
 
+const NAV_LINKS = [
+  { href: '/',       label: 'Hem' },
+  { href: '/priser', label: 'Priser' },
+  { href: '/karta',  label: 'Karta' },
+]
+
 export default function Navbar() {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
+  const pathname = usePathname()
   useEffect(() => setMounted(true), [])
 
   return (
@@ -20,20 +28,23 @@ export default function Navbar() {
 
         {/* Nav links */}
         <div className="flex items-center gap-1">
-          <Link
-            href="#priser"
-            className="px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[var(--muted-bg)]"
-            style={{ color: 'var(--muted)' }}
-          >
-            Priser
-          </Link>
-          <Link
-            href="#karta"
-            className="px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[var(--muted-bg)]"
-            style={{ color: 'var(--muted)' }}
-          >
-            Karta
-          </Link>
+          {NAV_LINKS.map(({ href, label }) => {
+            const isActive = pathname === href
+            return (
+              <Link
+                key={href}
+                href={href}
+                className="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150"
+                style={
+                  isActive
+                    ? { background: 'var(--primary-light)', color: 'var(--primary)', fontWeight: 600 }
+                    : { color: 'var(--muted)' }
+                }
+              >
+                {label}
+              </Link>
+            )
+          })}
 
           <div className="w-px h-5 mx-1" style={{ background: 'var(--card-border)' }} />
 

@@ -1,22 +1,28 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
 import StarRating from '@/components/StarRating'
+import CityBadge from '@/components/CityBadge'
 import type { School, ServiceType, PriceWithDetails, SchoolRating } from '@/lib/types'
 
 type Props = {
   serviceTypes: ServiceType[]
   prices: PriceWithDetails[]
   schools: School[]
+  cityFilter: string
+  onCityChange: (city: string) => void
 }
 
 const MEDALS = ['🥇', '🥈', '🥉']
 
-export default function PriceComparison({ serviceTypes, prices }: Props) {
+export default function PriceComparison({ serviceTypes, prices, schools, cityFilter, onCityChange }: Props) {
   const [activeTab, setActiveTab] = useState(serviceTypes[0]?.id ?? '')
   const [cheapestOnly, setCheapestOnly] = useState(false)
   const [ratings, setRatings] = useState<SchoolRating[]>([])
   const [userRatings, setUserRatings] = useState<Record<string, number>>({})
   const [shareLabel, setShareLabel] = useState('Dela')
+
+  // Derive sorted unique cities from schools
+  const cities = ['all', ...Array.from(new Set(schools.map(s => s.city).filter(Boolean))).sort()]
 
   // Sync initial tab from URL
   useEffect(() => {
@@ -87,17 +93,38 @@ export default function PriceComparison({ serviceTypes, prices }: Props) {
     } catch {}
   }, [activeTab, serviceTypes])
 
-  const filteredPrices = prices
-    .filter(p => p.service_type_id === activeTab)
-    .sort((a, b) => a.amount_sek - b.amount_sek)
+  // Filter schools by city
+  const visibleSchools = cityFilter === 'all'
+    ? schools
+    : schools.filter(s => s.city === cityFilter)
 
-  const displayed = cheapestOnly ? filteredPrices.slice(0, 1) : filteredPrices
-  const activeService = serviceTypes.find(s => s.id === activeTab)
-  const cheapest = filteredPrices[0]
-  const mostExpensive = filteredPrices[filteredPrices.length - 1]
-  const savings = cheapest && mostExpensive && filteredPrices.length > 1
-    ? mostExpensive.amount_sek - cheapest.amount_sek
+  // Build rows: each visible school paired with its price for the active tab (or null)
+  const pricesForTab = prices.filter(p => p.service_type_id === activeTab)
+
+  const rows = visibleSchools
+    .map(school => ({
+      school,
+      price: pricesForTab.find(p => p.school_id === school.id) ?? null,
+    }))
+    .sort((a, b) => {
+      if (!a.price && b.price) return 1
+      if (a.price && !b.price) return -1
+      if (!a.price || !b.price) return 0
+      return a.price.amount_sek - b.price.amount_sek
+    })
+
+  const rowsWithPrice = rows.filter(r => r.price !== null)
+  const cheapestPrice = rowsWithPrice[0]?.price ?? null
+  const mostExpensivePrice = rowsWithPrice[rowsWithPrice.length - 1]?.price ?? null
+  const savings = cheapestPrice && mostExpensivePrice && rowsWithPrice.length > 1
+    ? mostExpensivePrice.amount_sek - cheapestPrice.amount_sek
     : null
+
+  const displayed = cheapestOnly ? rowsWithPrice.slice(0, 1) : rows
+  const activeService = serviceTypes.find(s => s.id === activeTab)
+
+  // Medal index only counts rows with prices
+  let medalIdx = 0
 
   return (
     <section id="priser" className="py-20 px-4">
@@ -122,8 +149,8 @@ export default function PriceComparison({ serviceTypes, prices }: Props) {
           </button>
         </div>
 
-        {/* Tabs + Hitta billigaste */}
-        <div className="flex flex-wrap items-center gap-3 mb-8">
+        {/* Service type tabs + Billigaste toggle */}
+        <div className="flex flex-wrap items-center gap-3 mb-4">
           <div className="flex flex-wrap gap-2 p-1 rounded-xl" style={{ background: 'var(--muted-bg)' }}>
             {serviceTypes.map(service => (
               <button
@@ -154,6 +181,26 @@ export default function PriceComparison({ serviceTypes, prices }: Props) {
           </button>
         </div>
 
+        {/* City filter */}
+        {cities.length > 2 && (
+          <div className="flex flex-wrap gap-2 mb-8">
+            {cities.map(city => (
+              <button
+                key={city}
+                onClick={() => { onCityChange(city); setCheapestOnly(false) }}
+                className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all"
+                style={
+                  cityFilter === city
+                    ? { background: 'var(--primary)', color: '#fff' }
+                    : { background: 'var(--muted-bg)', color: 'var(--muted)', border: '1px solid var(--card-border)' }
+                }
+              >
+                {city === 'all' ? 'Alla orter' : city}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Savings banner */}
         {savings !== null && savings > 0 && !cheapestOnly && (
           <div
@@ -176,46 +223,57 @@ export default function PriceComparison({ serviceTypes, prices }: Props) {
         )}
 
         {/* Price list */}
-        {filteredPrices.length === 0 ? (
+        {displayed.length === 0 ? (
           <div
             className="text-center py-16 rounded-2xl border"
             style={{ color: 'var(--muted)', background: 'var(--card)', borderColor: 'var(--card-border)' }}
           >
-            Inga priser tillgängliga för denna tjänst.
+            Inga skolor eller priser hittades.
           </div>
         ) : (
           <div className="space-y-3">
-            {displayed.map((price, index) => {
-              const rating = ratings.find(r => r.school_id === price.school_id)
-              const userRated = userRatings[price.school_id] ?? null
+            {displayed.map(({ school, price }) => {
+              const isLowest = price !== null && price.amount_sek === cheapestPrice?.amount_sek
+              const currentMedalIdx = price !== null ? medalIdx++ : -1
+              const rating = ratings.find(r => r.school_id === school.id)
+              const userRated = userRatings[school.id] ?? null
+
               return (
                 <div
-                  key={price.id}
+                  key={school.id}
                   className="flex items-center justify-between p-5 rounded-2xl border transition-all hover:shadow-md"
                   style={
-                    index === 0
+                    isLowest
                       ? { background: 'var(--card)', border: '1.5px solid var(--primary)', boxShadow: 'var(--shadow-md)' }
                       : { background: 'var(--card)', borderColor: 'var(--card-border)' }
                   }
                 >
                   <div className="flex items-center gap-4">
                     <span className="text-2xl w-8 text-center select-none">
-                      {MEDALS[index] ?? <span className="text-sm font-bold" style={{ color: 'var(--muted)' }}>{index + 1}</span>}
+                      {price !== null
+                        ? (MEDALS[currentMedalIdx] ?? <span className="text-sm font-bold" style={{ color: 'var(--muted)' }}>{currentMedalIdx + 1}</span>)
+                        : <span className="text-sm" style={{ color: 'var(--muted)' }}>—</span>
+                      }
                     </span>
                     <div>
-                      <p className="font-semibold">{price.school.name}</p>
-                      <div className="flex flex-wrap gap-3 mt-0.5">
-                        {price.lesson_minutes > 0 && (
-                          <span className="text-xs" style={{ color: 'var(--muted)' }}>
-                            {price.lesson_minutes} min/lektion
-                          </span>
-                        )}
-                        {price.notes && (
-                          <span className="text-xs" style={{ color: 'var(--muted)' }}>{price.notes}</span>
-                        )}
-                      </div>
+                      <p className="font-semibold">{school.name}</p>
+                      <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>
+                        <CityBadge city={school.city} />
+                      </p>
+                      {price !== null && (
+                        <div className="flex flex-wrap gap-3 mt-0.5">
+                          {price.lesson_minutes > 0 && (
+                            <span className="text-xs" style={{ color: 'var(--muted)' }}>
+                              {price.lesson_minutes} min/lektion
+                            </span>
+                          )}
+                          {price.notes && (
+                            <span className="text-xs" style={{ color: 'var(--muted)' }}>{price.notes}</span>
+                          )}
+                        </div>
+                      )}
                       <StarRating
-                        schoolId={price.school_id}
+                        schoolId={school.id}
                         avg={rating?.avg ?? 0}
                         count={rating?.count ?? 0}
                         userRated={userRated}
@@ -225,15 +283,26 @@ export default function PriceComparison({ serviceTypes, prices }: Props) {
                   </div>
 
                   <div className="text-right shrink-0 ml-4">
-                    <p
-                      className="text-2xl font-bold tabular-nums"
-                      style={{ color: index === 0 ? 'var(--primary)' : 'var(--foreground)' }}
-                    >
-                      {price.amount_sek.toLocaleString('sv-SE')} kr
-                    </p>
-                    {index === 0 && (
-                      <span className="text-xs font-semibold" style={{ color: 'var(--success)' }}>
-                        Bästa priset
+                    {price !== null ? (
+                      <>
+                        <p
+                          className="text-2xl font-bold tabular-nums"
+                          style={{ color: isLowest ? 'var(--success)' : 'var(--foreground)' }}
+                        >
+                          {price.amount_sek.toLocaleString('sv-SE')} kr
+                        </p>
+                        {isLowest && (
+                          <span className="text-xs font-semibold" style={{ color: 'var(--success)' }}>
+                            Bästa priset
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <span
+                        className="text-xs font-semibold px-2.5 py-1 rounded-full"
+                        style={{ background: 'var(--muted-bg)', color: 'var(--muted)' }}
+                      >
+                        Priser saknas
                       </span>
                     )}
                   </div>
