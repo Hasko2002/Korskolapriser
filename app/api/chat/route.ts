@@ -5,6 +5,10 @@ import type { School, ServiceType, PriceWithDetails } from '@/lib/types'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
+// Cache school context for 5 minutes to avoid hitting Supabase on every message
+let cachedContext: string | null = null
+let cacheExpiry = 0
+
 function buildContext(schools: School[], _serviceTypes: ServiceType[], prices: PriceWithDetails[]): string {
   let ctx = 'KÖRSKOLOR I VÄXJÖ:\n'
   for (const school of schools) {
@@ -21,22 +25,30 @@ function buildContext(schools: School[], _serviceTypes: ServiceType[], prices: P
   return ctx
 }
 
+async function getContext(): Promise<string> {
+  if (cachedContext && Date.now() < cacheExpiry) {
+    return cachedContext
+  }
+  const [schools, serviceTypes, prices] = await Promise.all([
+    getSchools(),
+    getServiceTypes(),
+    getPricesWithDetails(),
+  ])
+  cachedContext = buildContext(schools, serviceTypes, prices)
+  cacheExpiry = Date.now() + 5 * 60 * 1000 // 5 minutes
+  return cachedContext
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { messages } = await req.json()
 
-    const [schools, serviceTypes, prices] = await Promise.all([
-      getSchools(),
-      getServiceTypes(),
-      getPricesWithDetails(),
-    ])
-
-    const context = buildContext(schools, serviceTypes, prices)
+    const context = await getContext()
 
     const stream = client.messages.stream({
       model: 'claude-haiku-4-5',
       max_tokens: 1024,
-      system: `Du är en hjälpsam AI-assistent för Körskolapriser Växjö — en tjänst som jämför priser mellan körskolor i Växjö, Sverige.
+      system: `Du är en hjälpsam AI-assistent för Körkollen — en tjänst som jämför priser mellan körskolor i Växjö, Sverige.
 
 Din uppgift:
 - Hjälp användare hitta rätt körskola baserat på deras behov och budget
@@ -72,10 +84,14 @@ Om du inte vet svaret på en fråga som inte rör körskolor, hänvisa artigt ti
     })
 
     return new Response(readable, {
-      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'X-Content-Type-Options': 'nosniff',
+      },
     })
   } catch (error) {
     console.error('Chat API error:', error)
-    return new Response('Något gick fel. Försök igen.', { status: 500 })
+    const msg = error instanceof Error ? error.message : 'Okänt fel'
+    return new Response(`Något gick fel: ${msg}`, { status: 500 })
   }
 }
