@@ -32,3 +32,9 @@ export type PriceWithDetails = Price & {
   school: School
   service_type: ServiceType
 }
+
+export type SchoolRating = {
+  school_id: string
+  avg: number
+  count: number
+}
