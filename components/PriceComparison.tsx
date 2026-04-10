@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
+import StarRating from '@/components/StarRating'
 import type { School, ServiceType, PriceWithDetails, SchoolRating } from '@/lib/types'
 
 type Props = {
@@ -9,41 +10,6 @@ type Props = {
 }
 
 const MEDALS = ['🥇', '🥈', '🥉']
-
-function Stars({
-  avg, count, schoolId, userRated, onRate,
-}: {
-  avg: number
-  count: number
-  schoolId: string
-  userRated: number | null
-  onRate: (schoolId: string, stars: number) => void
-}) {
-  const [hover, setHover] = useState(0)
-  const display = hover || userRated || Math.round(avg)
-
-  return (
-    <div className="flex items-center gap-0.5 mt-1">
-      {[1, 2, 3, 4, 5].map(s => (
-        <button
-          key={s}
-          disabled={!!userRated}
-          onClick={() => onRate(schoolId, s)}
-          onMouseEnter={() => !userRated && setHover(s)}
-          onMouseLeave={() => setHover(0)}
-          className="text-base leading-none transition-colors disabled:cursor-default"
-          style={{ color: s <= display ? '#f59e0b' : 'var(--card-border)' }}
-          aria-label={`${s} stjärnor`}
-        >
-          ★
-        </button>
-      ))}
-      <span className="text-xs ml-1" style={{ color: 'var(--muted)' }}>
-        {count > 0 ? `${avg.toFixed(1)} (${count})` : userRated ? 'Tack!' : 'Betygsätt'}
-      </span>
-    </div>
-  )
-}
 
 export default function PriceComparison({ serviceTypes, prices }: Props) {
   const [activeTab, setActiveTab] = useState(serviceTypes[0]?.id ?? '')
@@ -248,10 +214,10 @@ export default function PriceComparison({ serviceTypes, prices }: Props) {
                           <span className="text-xs" style={{ color: 'var(--muted)' }}>{price.notes}</span>
                         )}
                       </div>
-                      <Stars
+                      <StarRating
+                        schoolId={price.school_id}
                         avg={rating?.avg ?? 0}
                         count={rating?.count ?? 0}
-                        schoolId={price.school_id}
                         userRated={userRated}
                         onRate={handleRate}
                       />

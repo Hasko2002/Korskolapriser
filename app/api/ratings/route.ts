@@ -3,24 +3,15 @@ import type { SchoolRating } from '@/lib/types'
 
 export async function GET() {
   const { data, error } = await supabase
-    .from('ratings')
-    .select('school_id, stars')
+    .from('school_ratings')
+    .select('school_id, avg_rating, review_count')
 
   if (error) return Response.json([], { status: 500 })
 
-  // Aggregate per school
-  const map = new Map<string, { sum: number; count: number }>()
-  for (const row of data) {
-    const entry = map.get(row.school_id) ?? { sum: 0, count: 0 }
-    entry.sum += row.stars
-    entry.count += 1
-    map.set(row.school_id, entry)
-  }
-
-  const result: SchoolRating[] = Array.from(map.entries()).map(([school_id, { sum, count }]) => ({
-    school_id,
-    avg: sum / count,
-    count,
+  const result: SchoolRating[] = data.map(row => ({
+    school_id: row.school_id,
+    avg: Number(row.avg_rating),
+    count: Number(row.review_count),
   }))
 
   return Response.json(result)
